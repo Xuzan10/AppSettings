@@ -5,17 +5,15 @@ import android.content.pm.ApplicationInfo
 import android.databinding.DataBindingUtil
 import android.graphics.drawable.Drawable
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.example.sujan.appsettings.databinding.ItemAppBinding
 
-class AppAdapter(val appClick: AppAdapter.AppClick) : RecyclerView.Adapter<AppAdapter.AppViewHolder>() {
+class AppAdapter(val context: Context, var appList: MutableList<ApplicationInfo>,val appClick: AppAdapter.AppClick) : RecyclerView.Adapter<AppAdapter.AppViewHolder>() {
     interface AppClick {
         fun appClicked(position: Int)
     }
 
-    var appList: List<ApplicationInfo> = ArrayList()
 
     override fun getItemCount(): Int {
         return appList.size
@@ -25,8 +23,10 @@ class AppAdapter(val appClick: AppAdapter.AppClick) : RecyclerView.Adapter<AppAd
         holder.bind(appList[position])
     }
 
-    fun swapData(appList: List<ApplicationInfo>) {
-        this.appList = appList
+
+    fun filter(filteredAppList: MutableList<ApplicationInfo>) {
+        appList = arrayListOf()
+        appList.addAll(filteredAppList)
         notifyDataSetChanged()
     }
 
@@ -39,7 +39,7 @@ class AppAdapter(val appClick: AppAdapter.AppClick) : RecyclerView.Adapter<AppAd
     inner class AppViewHolder(val context: Context, val binding: ItemAppBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
-            binding.appName.setOnClickListener {
+            binding.root.setOnClickListener {
                 appClick.appClicked(adapterPosition)
             }
         }
