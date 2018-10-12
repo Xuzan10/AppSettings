@@ -8,17 +8,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.SearchView
 import android.view.Menu
 import com.example.sujan.appsettings.databinding.ActivityMainBinding
-import android.R.menu
-import android.support.v4.view.MenuItemCompat.getActionView
-import android.content.Context.SEARCH_SERVICE
-import android.app.SearchManager
-import android.content.Context
-import android.support.v7.widget.SearchView
-import android.view.MenuInflater
-import android.databinding.adapters.SearchViewBindingAdapter.setOnQueryTextListener
-import android.text.TextUtils
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(), AppAdapter.AppClick {
@@ -37,7 +30,7 @@ class MainActivity : AppCompatActivity(), AppAdapter.AppClick {
     }
 
     private fun getAppList() {
-        val packageManager: PackageManager = getPackageManager()
+        val packageManager: PackageManager = packageManager
         appList = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
         // Remove system apps
         val it = appList.iterator()
@@ -47,14 +40,21 @@ class MainActivity : AppCompatActivity(), AppAdapter.AppClick {
                 it.remove()
             }
         }
+
+        //sorting list alphabetically
+        appList.sortWith(Comparator { obj1, obj2 ->
+            obj1.loadLabel(packageManager).toString().compareTo(obj2.loadLabel(packageManager).toString(), ignoreCase = true)
+        })
+
         appAdapter = AppAdapter(this, appList, this)
         binding.appRecycler.layoutManager = LinearLayoutManager(this)
+        binding.appRecycler.setEmptyView(binding.emptyText)
         binding.appRecycler.adapter = appAdapter
     }
 
     override fun appClicked(position: Int) {
         val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.data = Uri.parse("package:${appList[position].packageName}")
+        intent.data = Uri.parse("package:${appAdapter.getList()[position].packageName}")
         startActivity(intent)
     }
 
@@ -72,13 +72,15 @@ class MainActivity : AppCompatActivity(), AppAdapter.AppClick {
 
             override fun onQueryTextChange(s: String): Boolean {
                 s.toLowerCase()
-                val newList: MutableList<ApplicationInfo> = arrayListOf()
-                appList.forEach {
-                    val appName = it.loadLabel(packageManager).toString().toLowerCase()
-                    if (appName.contains(s))
-                        newList.add(it)
-                }
-                appAdapter.filter(newList)
+                if(s.isNotEmpty()) {
+                    val newList: MutableList<ApplicationInfo> = arrayListOf()
+                    appList.forEach {
+                        val appName = it.loadLabel(packageManager).toString().toLowerCase()
+                        if (appName.contains(s))
+                            newList.add(it)
+                    }
+                    appAdapter.filter(newList)
+                }else appAdapter.setList(appList)
                 return true
             }
         })

@@ -23,6 +23,14 @@ class AppAdapter(val context: Context, var appList: MutableList<ApplicationInfo>
         holder.bind(appList[position])
     }
 
+    fun getList():List<ApplicationInfo>{
+        return appList
+    }
+
+    fun setList(appList: MutableList<ApplicationInfo>){
+        this.appList = appList
+        notifyDataSetChanged()
+    }
 
     fun filter(filteredAppList: MutableList<ApplicationInfo>) {
         appList = arrayListOf()
